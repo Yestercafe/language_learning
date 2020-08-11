@@ -1,0 +1,12 @@
+#lang scheme
+(define (mul a b)
+  (define (double x) (* x 2))
+  (define (halve x)
+    (if (= (remainder x 2) 0)
+        (/ x 2)
+        (error "err: the x of (halve x) must be an even.")))
+  (define (even? x) (= (remainder x 2) 0))
+  (cond ((or (= a 0) (= b 0)) 0)
+        ((= b 1) a)
+        ((even? b) (double (mul a (halve b))))
+        (else (+ a (mul a (- b 1))))))
