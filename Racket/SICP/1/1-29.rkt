@@ -1,0 +1,22 @@
+#lang scheme
+(define (Simpson-rule f a b n)
+  (define h (/ (- b a) n))
+  (exact->inexact (/ (* h (Simpson-rule-iter f a b 0 n)) 3)))
+
+(define (Simpson-rule-iter f a b k n)
+  (define h (/ (- b a) n))
+  (define (y k) (f (+ a (* k h))))
+  (define (even? x)
+    (= (remainder x 2)
+       0))
+  (cond ((> k n)
+         0)
+        ((or (= k 0) (= k n))
+         (+ (y k)
+            (Simpson-rule-iter f a b (+ 1 k) n)))
+        ((even? k)
+         (+ (* 2 (y k))
+            (Simpson-rule-iter f a b (+ 1 k) n)))
+        (else
+         (+ (* 4 (y k))
+            (Simpson-rule-iter f a b (+ 1 k) n)))))
