@@ -1,0 +1,56 @@
+#lang scheme
+
+(define (make-point x y)
+  (cons x y))
+(define (x-point p)
+  (car p))
+(define (y-point p)
+  (cdr p))
+
+(define (make-square-by-points a b)
+  (cons 1 (cons a b)))
+(define (make-square-by-edges m n)
+  (cons 2 (cons m n)))
+
+(define (x-square sq)
+  (car sq))
+(define (y-square sq)
+  (cdr sq))
+
+(define (circumference sq)
+  (let ((type (car sq))
+        (data (cdr sq)))
+    (cond ((= 1 type)
+           (let ((a (x-square data))
+                 (b (y-square data)))
+             (* 2
+                (+ (abs (- (x-point a)
+                           (x-point b)))
+                   (abs (- (y-point a)
+                           (y-point b)))))))
+           ((= 2 type)
+            (* 2 (+ (car data)
+                    (cdr data))))
+           (else
+            (error "Incorrect type.")))))
+
+(define (area sq)
+  (let ((type (car sq))
+        (data (cdr sq)))
+    (cond ((= 1 type)
+           (let ((a (x-square data))
+                 (b (y-square data)))
+             (* (abs (- (x-point a)
+                        (x-point b)))
+                (abs (- (y-point a)
+                        (y-point b))))))
+          ((= 2 type)
+           (* (car data)
+              (cdr data)))
+          (else
+           (error "Incorrect type.")))))
+
+(circumference (make-square-by-points (make-point 1 2) (make-point 4 5)))
+(circumference (make-square-by-edges 3 5))
+(area (make-square-by-points (make-point 1 2) (make-point 4 5)))
+(area (make-square-by-edges 3 5))

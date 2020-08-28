@@ -1,0 +1,38 @@
+#lang scheme
+
+(define (make-point x y)
+  (cons x y))
+(define (x-point p)
+  (car p))
+(define (y-point p)
+  (cdr p))
+
+(define (make-segment a b)
+  (cons a b))
+(define (start-segment l)
+  (car l))
+(define (end-segment l)
+  (cdr l))
+
+(define (print-point p)
+  (display "(")
+  (display (x-point p))
+  (display ",")
+  (display (y-point p))
+  (display ")")
+  (newline))
+
+(define (midpoint-segment l)
+  (let ((a (start-segment l))
+        (b (end-segment l))
+        (average (lambda (x y) (/ (+ x y) 2))))
+    (make-point (average (x-point a) (x-point b))
+                (average (y-point a) (y-point b)))))
+
+(define (segment-length l)
+  (let ((a (start-segment l))
+        (b (end-segment l))
+        (average (lambda (x y) (/ (+ x y) 2)))
+        (square (lambda (x) (* x x))))
+    (sqrt (+ (square (- (x-point a) (x-point b)))
+             (square (- (y-point a) (y-point b)))))))
