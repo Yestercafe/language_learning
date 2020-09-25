@@ -26,7 +26,7 @@ class LinkedList {
     };
     using Node = LinkedListNode<Tx>;
 
-public:
+  public:
     LinkedList()
      : head(nullptr), tail(nullptr), length(0u) { }
     LinkedList(const LinkedList& other)
@@ -39,16 +39,16 @@ public:
         this->length = other.length;
     }
 
-public:
+  public:
     ~LinkedList() {
         this->clear();
     }
 
-public:
+  public:
     ::size_t size() const { return this->length; }
     bool empty() const { return this->size() == 0; }
 
-public:
+  public:
     void push_back(Tx item) {
         if (head == nullptr) {
             head = tail = new Node(item);
@@ -76,7 +76,7 @@ public:
         --this->length;
     }
 
-public:
+  public:
     template<typename UnaryFunction>
     void for_each(UnaryFunction&& uf) {
         auto itr = head;
@@ -100,7 +100,7 @@ public:
             this->pop_back();
     }
 
-private:
+  private:
     Node* head;
     Node* tail;
     ::size_t length;
