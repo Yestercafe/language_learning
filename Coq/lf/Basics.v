@@ -232,17 +232,20 @@ Proof. simpl. reflexivity. Qed.
     中的断言都能被 Coq 验证通过。（即仿照上文 [orb] 测试的模式补充证明，
     并确保 Coq 接受它。）此函数应在两个输入中包含 [false] 时返回 [true] 。 *)
 
-Definition nandb (b1:bool) (b2:bool) : bool
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Definition nandb (b1:bool) (b2:bool) : bool := 
+  match b1 with
+    | false => true
+    | true => negb b2
+    end.
 
 Example test_nandb1:               (nandb true false) = true.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_nandb2:               (nandb false false) = true.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_nandb3:               (nandb false true) = true.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_nandb4:               (nandb true true) = false.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 (** [] *)
 
 (** **** 练习：1 星, standard (andb3) 
@@ -250,17 +253,20 @@ Example test_nandb4:               (nandb true true) = false.
     与此前相同，完成下面的 [andb3] 函数。
     此函数应在所有输入均为 [true] 时返回 [true]，否则返回 [false]。 *)
 
-Definition andb3 (b1:bool) (b2:bool) (b3:bool) : bool
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Definition andb3 (b1:bool) (b2:bool) (b3:bool) : bool :=
+  match b1 with
+    | false => false
+    | true => andb b2 b3
+    end.
 
 Example test_andb31:                 (andb3 true true true) = true.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_andb32:                 (andb3 false true true) = false.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_andb33:                 (andb3 true false true) = false.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_andb34:                 (andb3 true true false) = false.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 (** [] *)
 
 (* ================================================================= *)
@@ -628,13 +634,16 @@ Fixpoint exp (base power : nat) : nat :=
 
     把它翻译成 Coq 语言。 *)
 
-Fixpoint factorial (n:nat) : nat
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Fixpoint factorial (n:nat) : nat :=
+  match n with
+    | O => 1
+    | S n' => mult n (factorial n')
+    end.
 
 Example test_factorial1:          (factorial 3) = 6.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_factorial2:          (factorial 5) = (mult 10 12).
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 (** [] *)
 
 (** 我们可以通过引入加法、乘法和减法的_'记法（Notation）'_来让数字表达式更加易读。 *)
@@ -709,17 +718,17 @@ Proof. simpl. reflexivity.  Qed.
     请利用前文定义的函数写出该定义，不要使用 [Fixpoint] 构造新的递归。
     （只需前文中的一个函数即可实现定义，但亦可两者皆用。） *)
 
-Definition ltb (n m : nat) : bool
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Definition ltb (n m : nat) : bool :=
+  andb (negb (eqb n m)) (leb n m).
 
 Notation "x <? y" := (ltb x y) (at level 70) : nat_scope.
 
 Example test_ltb1:             (ltb 2 2) = false.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_ltb2:             (ltb 2 4) = true.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_ltb3:             (ltb 4 2) = false.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -842,7 +851,12 @@ Proof.
 Theorem plus_id_exercise : forall n m o : nat,
   n = m -> m = o -> n + m = m + o.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m o.
+  intros H1.
+  rewrite -> H1.
+  intros H2.
+  rewrite -> H2.
+  reflexivity. Qed.
 (** [] *)
 
 (** [Admitted] 指令告诉 Coq 我们想要跳过此定理的证明，而将其作为已知条件，
@@ -877,7 +891,11 @@ Proof.
 Theorem mult_n_1 : forall n : nat,
   n * 1 = n.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n.
+  rewrite <- mult_n_Sm.
+  rewrite <- mult_n_O.
+  rewrite -> plus_O_n.
+  reflexivity. Qed.
 
 (** [] *)
 
@@ -911,6 +929,7 @@ Theorem plus_1_neq_0 : forall n : nat,
   (n + 1) =? 0 = false.
 Proof.
   intros n. destruct n as [| n'] eqn:E.
+  
   - reflexivity.
   - reflexivity.   Qed.
 
@@ -1067,14 +1086,32 @@ Qed.
 Theorem andb_true_elim2 : forall b c : bool,
   andb b c = true -> c = true.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros b c. destruct b.
+  - destruct c.
+    + reflexivity.
+    + simpl.
+      intros H.
+      rewrite -> H.
+      reflexivity.
+  - destruct c.
+    + simpl.
+      reflexivity.  
+    + simpl.
+      intros H.
+      rewrite -> H.
+      reflexivity.
+Qed.
 (** [] *)
 
 (** **** 练习：1 星, standard (zero_nbeq_plus_1)  *)
 Theorem zero_nbeq_plus_1 : forall n : nat,
   0 =? (n + 1) = false.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n. destruct n.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
 (** [] *)
 
 (* ################################################################# *)
@@ -1164,7 +1201,12 @@ Theorem identity_fn_applied_twice :
   (forall (x : bool), f x = x) ->
   forall (b : bool), f (f b) = b.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros f H.
+  intros x.
+  rewrite -> H.
+  rewrite -> H.
+  reflexivity.
+Qed.
 
 (** [] *)
 
@@ -1173,7 +1215,19 @@ Proof.
     现在声明并证明定理 [negation_fn_applied_twice]，与上一个类似，
     但是第二个前提说明函数 [f] 有 [f x = negb x] 的性质。 *)
 
-(* 请在此处解答 *)
+Theorem negation_fn_applied_twice:
+  forall (f : bool -> bool),
+  (forall (x : bool), f x = negb x) ->
+  forall (b : bool), f (f b) = b.
+Proof.
+  intros f H.
+  intros x.
+  rewrite -> H.
+  rewrite -> H.
+  destruct x.
+  - reflexivity.
+  - reflexivity.
+Qed.
 
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_negation_fn_applied_twice : option (nat*string) := None.
@@ -1191,7 +1245,16 @@ Theorem andb_eq_orb :
   (andb b c = orb b c) ->
   b = c.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  destruct b.
+  - simpl.
+    intros c H.
+    rewrite -> H.
+    reflexivity.
+  - simpl.
+    intros c H.
+    rewrite -> H.
+    reflexivity.
+Qed.
 
 (** [] *)
 
@@ -1230,11 +1293,20 @@ Inductive bin : Type :=
     for binary numbers, and a function [bin_to_nat] to convert
     binary numbers to unary numbers. *)
 
-Fixpoint incr (m:bin) : bin
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Fixpoint incr (m:bin) : bin :=
+  match m with
+    | Z => B Z
+    | B Z => A (B Z)
+    | A n => B n
+    | B n => A (incr n)
+  end.
 
-Fixpoint bin_to_nat (m:bin) : nat
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Fixpoint bin_to_nat (m:bin) : nat :=
+  match m with
+    | Z => 0
+    | A n => (bin_to_nat n) * 2
+    | B n => (bin_to_nat n) * 2 + 1
+  end.
 
 (** The following "unit tests" of your increment and binary-to-unary
     functions should pass after you have defined those functions correctly.
@@ -1243,24 +1315,24 @@ Fixpoint bin_to_nat (m:bin) : nat
     next chapter. *)
 
 Example test_bin_incr1 : (incr (B Z)) = A (B Z).
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 
 Example test_bin_incr2 : (incr (A (B Z))) = B (B Z).
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 
 Example test_bin_incr3 : (incr (B (B Z))) = A (A (B Z)).
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 
 Example test_bin_incr4 : bin_to_nat (A (B Z)) = 2.
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 
 Example test_bin_incr5 :
         bin_to_nat (incr (B Z)) = 1 + bin_to_nat (B Z).
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 
 Example test_bin_incr6 :
         bin_to_nat (incr (incr (B Z))) = 2 + bin_to_nat (B Z).
-(* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 
 (** [] *)
 
