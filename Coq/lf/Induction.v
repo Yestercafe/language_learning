@@ -171,22 +171,34 @@ Proof.
 Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity. Qed. 
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity. Qed.
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m.
+  induction n as [| n' IHn'].
+  - simpl. rewrite <- plus_n_O. reflexivity.
+  - simpl. rewrite -> IHn'. rewrite -> plus_n_Sm. reflexivity.
+Qed. 
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m p.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity. Qed.
 (** [] *)
 
 (** **** 练习：2 星, standard (double_plus) 
@@ -203,7 +215,11 @@ Fixpoint double (n:nat) :=
 
 Lemma double_plus : forall n, double n = n + n .
 Proof.
-  (* 请在此处解答 *) Admitted.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. rewrite <- plus_n_Sm. reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** 练习：2 星, standard, optional (evenb_S) 
@@ -215,7 +231,16 @@ Proof.
 Theorem evenb_S : forall n : nat,
   evenb (S n) = negb (evenb n).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - rewrite -> IHn'. simpl. 
+    assert (negb_double: forall n : bool, negb (negb n) = n). {
+      destruct n.
+      - simpl. reflexivity.
+      - simpl. reflexivity.
+    }
+    rewrite -> negb_double. reflexivity.
+Qed.
 (** [] *)
 
 (** **** 练习：1 星, standard, optional (destruct_induction) 
@@ -223,6 +248,9 @@ Proof.
     请简要说明一下 [destruct] 策略和 [induction] 策略之间的区别。
 
 (* 请在此处解答 *)
+
+induction 在 destruct 的基础上会引入一个假设的命题（上文中出现 IHn'）参与证明。
+
 *)
 
 (* 请勿修改下面这一行： *)
@@ -382,6 +410,29 @@ Proof.
     定理：加法满足交换律。
 
     Proof: (* 请在此处解答 *)
+
+    Theorem plus_comm : forall n m : nat,
+      n + m = m + n.
+    Proof.
+      intros n m.
+      induction n as [| n' IHn'].
+      - simpl. rewrite <- plus_n_O. reflexivity.
+      - simpl. rewrite -> IHn'. rewrite -> plus_n_Sm. reflexivity.
+    Qed. 
+
+    - 首先，设 n = 0，
+          0 + m = m + 0 => m = m + 0.
+      由 plus_n_O 替换可得，
+          m = m. 得证。
+    - 设 n = S n'，有
+          n' + m = m + n'.
+      要证
+          S n' + m = m + S n'.
+       => S (n' + m) = m + S n'.   (simpl)
+       => S (m + n') = m + S n'.   (IHn')
+      由 plus_n_Sm，上式成立。
+    Qed.
+
 *)
 
 (* 请勿修改下面这一行： *)
@@ -409,7 +460,12 @@ Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 Theorem plus_swap : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m p.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'.
+    rewrite -> plus_n_Sm. reflexivity.
+Qed.
 
 (** 现在证明乘法交换律。（你在证明过程中可能想要定义并证明一个辅助定理。
     提示：[n * (1 + k)] 是什么？） *)
@@ -417,7 +473,25 @@ Proof.
 Theorem mult_comm : forall m n : nat,
   m * n = n * m.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros m n.
+  induction m as [| m' IHm'].
+  assert (mult_n_O: forall i : nat, i * 0 = 0).
+    { simpl.
+      induction i as [| i' IHi'].
+      - reflexivity.
+      - simpl. apply IHi'. }
+  - simpl.
+    rewrite -> mult_n_O.
+    reflexivity.
+  - simpl. 
+    (* assert (H: forall i j: nat,
+    i + i * j = i * S j).
+    { intros i j.
+      induction j as [| j' IHj'].
+      - rewrite -> mult_n_O.       } *)
+    rewrite -> IHm'. 
+Abort.
+(* 未完成 *)
 (** [] *)
 
 (** **** 练习：3 星, standard, optional (more_exercises) 
@@ -428,30 +502,42 @@ Proof.
 
 Check leb.
 
+(* 没注意看题目，下面重新做，先打个 commit *)
 Theorem leb_refl : forall n:nat,
   true = (n <=? n).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
 
 Theorem zero_nbeq_S : forall n:nat,
   0 =? (S n) = false.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  reflexivity.  
+Qed.
 
 Theorem andb_false_r : forall b : bool,
   andb b false = false.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  destruct b.
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+Qed.
 
 Theorem plus_ble_compat_l : forall n m p : nat,
   n <=? m = true -> (p + n) <=? (p + m) = true.
 Proof.
-  (* 请在此处解答 *) Admitted.
-
+  intros n m p H.
+  induction p as [| p' IHp'].
+  - simpl. rewrite -> H. reflexivity.
+  - simpl. rewrite -> IHp'. reflexivity.
+Qed.
+  
 Theorem S_nbeq_0 : forall n:nat,
   (S n) =? 0 = false.
-Proof.
-  (* 请在此处解答 *) Admitted.
+Proof. reflexivity. Qed.
 
 Theorem mult_1_l : forall n:nat, 1 * n = n.
 Proof.
