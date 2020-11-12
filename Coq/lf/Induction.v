@@ -461,10 +461,14 @@ Theorem plus_swap : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
   intros n m p.
-  induction n as [| n' IHn'].
-  - simpl. reflexivity.
-  - simpl. rewrite -> IHn'.
-    rewrite -> plus_n_Sm. reflexivity.
+  assert (H: n + (m + p) = m + (n + p)).
+  {
+    induction n as [| n' IHn'].
+    - simpl. reflexivity.
+    - simpl. rewrite -> IHn'.
+      rewrite -> plus_n_Sm. reflexivity.
+  }
+  rewrite -> H. reflexivity.
 Qed.
 
 (** 现在证明乘法交换律。（你在证明过程中可能想要定义并证明一个辅助定理。
@@ -483,15 +487,16 @@ Proof.
   - simpl.
     rewrite -> mult_n_O.
     reflexivity.
-  - simpl. 
-    (* assert (H: forall i j: nat,
+  - simpl.
+    assert (H: forall i j: nat,
     i + i * j = i * S j).
     { intros i j.
-      induction j as [| j' IHj'].
-      - rewrite -> mult_n_O.       } *)
-    rewrite -> IHm'. 
-Abort.
-(* 未完成 *)
+      induction i as [| i' IHi'].
+      - simpl. reflexivity.
+      - simpl. rewrite <- IHi'.
+        rewrite -> plus_swap. reflexivity.   }
+    rewrite -> IHm'. rewrite -> H.  reflexivity.
+Qed.
 (** [] *)
 
 (** **** 练习：3 星, standard, optional (more_exercises) 
