@@ -461,13 +461,9 @@ Theorem plus_swap : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
   intros n m p.
-  assert (H: n + (m + p) = m + (n + p)).
-  {
-    induction n as [| n' IHn'].
-    - simpl. reflexivity.
-    - simpl. rewrite -> IHn'.
-      rewrite -> plus_n_Sm. reflexivity.
-  }
+  rewrite -> plus_assoc.
+  rewrite -> plus_assoc.
+  assert (H: n + m = m + n). { rewrite -> plus_comm. reflexivity. }
   rewrite -> H. reflexivity.
 Qed.
 
@@ -507,22 +503,24 @@ Qed.
 
 Check leb.
 
-(* 没注意看题目，下面重新做，先打个 commit *)
+(* 使用归纳 *)
 Theorem leb_refl : forall n:nat,
   true = (n <=? n).
 Proof.
   intros n.
   induction n as [| n' IHn'].
   - simpl. reflexivity.
-  - simpl. rewrite -> IHn'. reflexivity.
+  - simpl. rewrite -> IHn'.  reflexivity.
 Qed.
 
+(* 直接化简改写 *)
 Theorem zero_nbeq_S : forall n:nat,
   0 =? (S n) = false.
 Proof.
-  reflexivity.  
+  simpl. reflexivity.
 Qed.
 
+(* 分类 *)
 Theorem andb_false_r : forall b : bool,
   andb b false = false.
 Proof.
@@ -531,6 +529,7 @@ Proof.
   - simpl. reflexivity.
 Qed.
 
+(* 归纳 *)
 Theorem plus_ble_compat_l : forall n m p : nat,
   n <=? m = true -> (p + n) <=? (p + m) = true.
 Proof.
@@ -540,14 +539,21 @@ Proof.
   - simpl. rewrite -> IHp'. reflexivity.
 Qed.
   
+(* 化简改写 *)
 Theorem S_nbeq_0 : forall n:nat,
   (S n) =? 0 = false.
-Proof. reflexivity. Qed.
+Proof. simpl. reflexivity. Qed.
 
+(* 归纳 *)
 Theorem mult_1_l : forall n:nat, 1 * n = n.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n. simpl. 
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl.  rewrite -> IHn'. reflexivity.
+Qed.
 
+(* 分类 *)
 Theorem all3_spec : forall b c : bool,
     orb
       (andb b c)
@@ -555,17 +561,33 @@ Theorem all3_spec : forall b c : bool,
                (negb c))
   = true.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  destruct b, c.
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+Qed. 
 
+(* 归纳 *)
 Theorem mult_plus_distr_r : forall n m p : nat,
   (n + m) * p = (n * p) + (m * p).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m p.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. rewrite -> plus_assoc. reflexivity.
+Qed.
 
+(* 归纳 *)
 Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m p.
+  induction n as [| n' IHn'].
+  - simpl.  reflexivity.
+  - simpl. rewrite -> IHn'. 
+    rewrite -> mult_plus_distr_r. reflexivity.
+Qed.
 (** [] *)
 
 (** **** 练习：2 星, standard, optional (eqb_refl) 
@@ -577,7 +599,11 @@ Proof.
 Theorem eqb_refl : forall n : nat,
   true = (n =? n).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n. simpl. 
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
 (** [] *)
 
 (** **** 练习：2 星, standard, optional (plus_swap') 
@@ -593,7 +619,13 @@ Proof.
 Theorem plus_swap' : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m p.
+  rewrite -> plus_assoc.
+  rewrite -> plus_assoc.
+  replace (n + m) with (m + n).
+  - reflexivity.
+  - rewrite -> plus_comm. reflexivity.
+Qed.
 (** [] *)
 
 (** **** 练习：3 星, standard, recommended (binary_commute) 
@@ -619,6 +651,14 @@ Proof.
     请自便！ *)
 
 (* 请在此处解答 *)
+Theorem bin_to_nat_pres_incr:
+  forall n : bin,
+  bin_to_nat (incr n) = S (bin_to_nat n).
+Proof.
+  intros n.
+  induction n as [| n' IHn' | n' IHn'].
+  - simpl. reflexivity.
+  - Abort.
 
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_binary_commute : option (nat*string) := None.
