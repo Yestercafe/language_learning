@@ -674,27 +674,20 @@ Check ((0 + 1) + 1) : nat.
     （亦可仿照 [minus] 使用并列匹配）。 *)
 
 Fixpoint eqb (n m : nat) : bool :=
-  match n with
-  | O => match m with
-         | O => true
-         | S m' => false
-         end
-  | S n' => match m with
-            | O => false
-            | S m' => eqb n' m'
-            end
+  match n , m with
+    | O , O => true 
+    | _ , O => false
+    | O , _ => false
+    | S n' , S m' => eqb n' m'
   end.
 
 (** 类似地，[leb] 函数检查其第一个参数是否小于等于第二个参数，以布尔值表示。 *)
 
 Fixpoint leb (n m : nat) : bool :=
-  match n with
-  | O => true
-  | S n' =>
-      match m with
-      | O => false
-      | S m' => leb n' m'
-      end
+  match n , m with
+    | O , _ => true
+    | S n', O => false
+    | S n' , S m' => leb n' m'
   end.
 
 Example test_leb1:                leb 2 2 = true.
