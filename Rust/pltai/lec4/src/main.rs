@@ -19,3 +19,21 @@ fn main() {
     let mut new_vm = VM::new(codes, true);
     new_vm.run()
 }
+
+/*
+Result:
+Code seq: [0, 1, 0, 2, 0, 3, 6, 11, 3, 9, 21, 3, 3, 3, 2, 1, 3, 1, 1, 7, 3, 10]
+Current pc: 0, rts: []
+Current pc: 2, rts: [1]
+Current pc: 4, rts: [1, 2]
+Current pc: 6, rts: [1, 2, 3]
+Current pc: 11, rts: [9, 3, 2, 1]
+Current pc: 13, rts: [9, 3, 2, 1, 1]
+Current pc: 15, rts: [9, 3, 2, 1, 1, 2]
+Current pc: 16, rts: [9, 3, 2, 1, 3]
+Current pc: 18, rts: [9, 3, 2, 1, 3, 3]
+Current pc: 19, rts: [9, 3, 2, 1, 6]
+Current pc: 9, rts: [6]
+Current pc: 21, rts: [6]
+Halt. pc: 21, rts: [6]
+ */
