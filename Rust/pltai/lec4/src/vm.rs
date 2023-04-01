@@ -19,7 +19,7 @@ enum Opcode {
 #[derive(Debug)]
 pub struct VM {
     code: Vec<i32>,
-    rts: Vec<i32>,  // Runtime Stack
+    rts: Vec<i32>, // Runtime Stack
     pc: usize,
     halt: bool,
     debug_mode: bool,
@@ -32,48 +32,48 @@ impl VM {
             rts: vec![],
             pc: 0,
             halt: false,
-            debug_mode
+            debug_mode,
         }
     }
 
     fn onestep(&mut self) {
         if self.halt {
             println!("The virtual machine halted.");
-            return
+            return;
         }
         match FromPrimitive::from_i32(self.code[self.pc]) {
             Some(Opcode::Cst) => {
                 let i = self.code[self.pc + 1];
                 self.rts.push(i);
                 self.pc += 2;
-            },
+            }
             Some(Opcode::Add) => {
                 let op2 = self.rts.pop().unwrap();
                 let op1 = self.rts.pop().unwrap();
                 self.rts.push(op1 + op2);
                 self.pc += 1;
-            },
+            }
             Some(Opcode::Mul) => {
                 let op2 = self.rts.pop().unwrap();
                 let op1 = self.rts.pop().unwrap();
                 self.rts.push(op1 * op2);
                 self.pc += 1
-            },
+            }
             Some(Opcode::Var) => {
                 let i = self.code[self.pc + 1];
                 self.rts.push(self.rts[usize::try_from(i).unwrap()]);
                 self.pc += 2;
-            },
+            }
             Some(Opcode::Pop) => {
                 self.rts.pop();
                 self.pc += 1;
-            },
+            }
             Some(Opcode::Swap) => {
                 let op2 = self.rts.pop().unwrap();
                 let op1 = self.rts.pop().unwrap();
                 self.rts.push(op2);
                 self.rts.push(op1);
-            },
+            }
             Some(Opcode::Call) => {
                 let callee_addr = self.code[self.pc + 1];
                 // self.pc now is caller_addr
@@ -82,20 +82,22 @@ impl VM {
                 for _ in 0..arity {
                     args.push(self.rts.pop().unwrap());
                 }
-                self.rts.push(i32::try_from(self.pc + 3).unwrap());   // return addr
+                self.rts.push(i32::try_from(self.pc + 3).unwrap()); // return addr
                 for arg in args {
                     self.rts.push(arg);
                 }
                 self.pc = usize::try_from(callee_addr).unwrap();
-            },
+            }
             Some(Opcode::Ret) => {
                 let arity = self.code[self.pc + 1];
                 let return_value = self.rts.pop().unwrap();
-                for _ in 0..arity { self.rts.pop(); }
+                for _ in 0..arity {
+                    self.rts.pop();
+                }
                 let return_addr = self.rts.pop().unwrap();
                 self.rts.push(return_value);
                 self.pc = usize::try_from(return_addr).unwrap();
-            },
+            }
             Some(Opcode::IfZero) => {
                 let conseq_addr = self.code[self.pc + 1];
                 let rts_top = self.rts.pop().unwrap();
@@ -104,14 +106,14 @@ impl VM {
                 } else {
                     self.pc += 2;
                 }
-            },
+            }
             Some(Opcode::Goto) => {
                 let target_addr = self.code[self.pc + 1];
                 self.pc = usize::try_from(target_addr).unwrap();
-            },
+            }
             Some(Opcode::Exit) => {
                 self.halt = true;
-            },
+            }
             None => {
                 panic!("Read wrong opcode!")
             }

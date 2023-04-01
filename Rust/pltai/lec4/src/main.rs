@@ -1,23 +1,55 @@
+mod compiler;
+mod ir;
+mod syntax;
 mod vm;
+use compiler::Program;
+use syntax::{
+    Expr::{App, Cst, If, Let, Letfn, Prim, Var},
+    Primitive::{Add, Mul},
+};
 use vm::VM;
 
 fn main() {
+    let program = Program::new(Let(
+        "a".into(),
+        Box::new(Cst(2)),
+        Box::new(Letfn(
+            "cube".into(),
+            vec!["x".into()],
+            Box::new(Letfn(
+                "square".into(),
+                vec!["x".into()],
+                Box::new(Prim(Mul, vec![Var("x".into()), Var("x".into())])),
+                Box::new(Prim(
+                    Mul,
+                    vec![App("square".into(), vec![Var("x".into())]), Var("x".into())],
+                )),
+            )),
+            Box::new(App("cube".into(), vec![Var("a".into())])),
+        )),
+    ));
+
+    let ir = program.compile();
+    println!("{:?}", ir);
+
+    /*
     let codes: Vec<i32> = vec![
-        0, 1,           // Cst 1
-        0, 2,           // Cst 2
-        0, 3,           // Cst 3
-        6, 11, 3,       // Call 11(Var 0) 3
-        9, 21,          // Goto 21(Exit)
-        3, 3,           // Var 4
-        3, 2,           // Var 3
-        1,              // Add
-        3, 1,           // Var 2
-        1,              // Add
-        7, 3,           // Ret 3
-        10,             // Exit
+        0, 1, // Cst 1
+        0, 2, // Cst 2
+        0, 3, // Cst 3
+        6, 11, 3, // Call 11(Var 0) 3
+        9, 21, // Goto 21(Exit)
+        3, 3, // Var 4
+        3, 2, // Var 3
+        1, // Add
+        3, 1, // Var 2
+        1, // Add
+        7, 3,  // Ret 3
+        10, // Exit
     ];
     let mut new_vm = VM::new(codes, true);
     new_vm.run()
+    */
 }
 
 /*
