@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use uuid::Uuid;
 
 use crate::ir::{IRProgram, IR};
@@ -39,7 +37,7 @@ fn encodePrimitive(prim: Primitive) -> IR {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 enum VarType {
     VLocal,
     VTemp,
@@ -50,6 +48,7 @@ pub struct Program {
     functions: Vec<Function>,
     naming: Vec<String>,
     var_types: Vec<VarType>,
+    cnt_local: usize,
 }
 
 impl Program {
@@ -97,27 +96,68 @@ impl Program {
             functions,
             naming: vec![],
             var_types: vec![],
+            cnt_local: 0,
         }
     }
 
-    fn compile_expr(&self, expr: FlatExpr) -> Vec<IR> {
+    fn push_local(&mut self, name: String) {
+        self.naming.push(name);
+        self.var_types.push(VarType::VLocal);
+        self.cnt_local += 1;
+    }
+
+    fn push_temp(&mut self) {
+        self.naming.push("".into());
+        self.var_types.push(VarType::VTemp);
+    }
+
+    fn pop_var(&mut self) -> (String, VarType) {
+        let name = self.naming.pop().unwrap();
+        if let Some(VarType::VLocal) = self.var_types.pop() {
+            self.cnt_local -= 1;
+            (name, VarType::VLocal)
+        } else {
+            (name, VarType::VTemp)
+        }
+    }
+
+    fn get_index_of_var(&mut self, target: String) -> usize {
+        let mut actual_pos = 0usize;
+        let l = self.naming.len();
+        for i in (0..l).rev() {
+            if self.naming[i] == target {
+                return actual_pos;
+            }
+            actual_pos += 1;
+        }
+        panic!("Can't find var {}", target)
+    }
+
+    fn compile_expr(&mut self, expr: FlatExpr) -> Vec<IR> {
         match expr {
             FlatExpr::Cst(x) => {
                 vec![IR::Cst(x)]
             }
             FlatExpr::Var(x) => {
-                vec![IR::Var(x)]
+                vec![IR::Var(self.get_index_of_var(x))]
             }
             FlatExpr::Let(x, val, next) => {
                 let mut seq = self.compile_expr(*val);
+                self.push_local(x);
                 seq.extend(self.compile_expr(*next));
+                self.pop_var();
                 seq.extend(vec![IR::Swap, IR::Pop]);
                 seq
             }
             FlatExpr::Prim(prim, args) => {
                 let mut seq: Vec<IR> = vec![];
+                let l = args.len();
                 for arg in args {
                     seq.extend(self.compile_expr(arg));
+                    self.push_temp();
+                }
+                for _ in 0..l {
+                    self.pop_var();
                 }
                 seq.push(encodePrimitive(prim));
                 seq
@@ -146,27 +186,34 @@ impl Program {
         }
     }
 
-    fn compile_exprs(&self, exprs: Vec<FlatExpr>) -> Vec<IR> {
+    fn compile_exprs(&mut self, exprs: Vec<FlatExpr>) -> Vec<IR> {
         let mut seq: Vec<IR> = vec![];
+        let l = exprs.len();
         for expr in exprs {
             seq.extend(self.compile_expr(expr));
+            self.push_temp();
+        }
+        for _ in 0..l {
+            self.pop_var();
         }
         seq
     }
 
-    pub fn compile(self) -> IRProgram {
-        let mut arity_table: HashMap<String, i32> = HashMap::new();
+    pub fn compile(&mut self) -> IRProgram {
+        let mut res: Vec<IR> = vec![IR::Call("main".into(), 0), IR::Exit];
+        let functions = self.functions.clone();
 
-        let mut res: Vec<IR> = vec![IR::Goto("main".into()), IR::Exit];
-
-        for function in &self.functions {
-            arity_table.insert(
-                function.name.clone(),
-                i32::try_from(function.parameters.len()).unwrap(),
-            );
+        for function in functions {
+            let l = function.parameters.len();
             res.push(IR::Label(function.name.clone()));
-            res.extend(self.compile_expr(function.body.clone()));
-            res.push(IR::Ret(i32::try_from(function.parameters.len()).unwrap()));
+            for param in function.parameters {
+                self.push_local(param);
+            }
+            res.extend(self.compile_expr(function.body));
+            for _ in 0..l {
+                self.pop_var();
+            }
+            res.push(IR::Ret(i32::try_from(l).unwrap()));
         }
 
         IRProgram::new(res)

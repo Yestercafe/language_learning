@@ -2,7 +2,7 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 #[derive(FromPrimitive)]
-enum Opcode {
+pub enum Opcode {
     Cst = 0,
     Add = 1,
     Mul = 2,
@@ -61,7 +61,8 @@ impl VM {
             }
             Some(Opcode::Var) => {
                 let i = self.code[self.pc + 1];
-                self.rts.push(self.rts[usize::try_from(i).unwrap()]);
+                self.rts
+                    .push(self.rts[self.rts.len() - 1 - usize::try_from(i).unwrap()]);
                 self.pc += 2;
             }
             Some(Opcode::Pop) => {
@@ -73,6 +74,7 @@ impl VM {
                 let op1 = self.rts.pop().unwrap();
                 self.rts.push(op2);
                 self.rts.push(op1);
+                self.pc += 1;
             }
             Some(Opcode::Call) => {
                 let callee_addr = self.code[self.pc + 1];
@@ -124,7 +126,10 @@ impl VM {
         println!("Code seq: {:?}", self.code);
         while !self.halt {
             if self.debug_mode {
-                println!("Current pc: {}, rts: {:?}", self.pc, self.rts);
+                println!(
+                    "Current pc: {}, code: {}, rts: {:?}",
+                    self.pc, self.code[self.pc], self.rts
+                );
             }
             self.onestep();
         }

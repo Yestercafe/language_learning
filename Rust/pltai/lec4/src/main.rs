@@ -10,7 +10,7 @@ use syntax::{
 use vm::VM;
 
 fn main() {
-    let program = Program::new(Let(
+    let mut program = Program::new(Let(
         "a".into(),
         Box::new(Cst(2)),
         Box::new(Letfn(
@@ -28,31 +28,34 @@ fn main() {
             Box::new(App("cube".into(), vec![Var("a".into())])),
         )),
     ));
+    println!("{:?}", program);
 
     let ir = program.compile();
     println!("{:?}", ir);
 
-    /*
-    let codes: Vec<i32> = vec![
-        0, 1, // Cst 1
-        0, 2, // Cst 2
-        0, 3, // Cst 3
-        6, 11, 3, // Call 11(Var 0) 3
-        9, 21, // Goto 21(Exit)
-        3, 3, // Var 4
-        3, 2, // Var 3
-        1, // Add
-        3, 1, // Var 2
-        1, // Add
-        7, 3,  // Ret 3
-        10, // Exit
-    ];
-    let mut new_vm = VM::new(codes, true);
-    new_vm.run()
-    */
+    let machine_codes = ir.compile();
+    println!("{:?}", machine_codes);
+
+    let mut vm = VM::new(machine_codes, true);
+    vm.run()
 }
 
 /*
+let codes: Vec<i32> = vec![
+    0, 1, // Cst 1
+    0, 2, // Cst 2
+    0, 3, // Cst 3
+    6, 11, 3, // Call 11(Var 0) 3
+    9, 21, // Goto 21(Exit)
+    3, 3, // Var 4
+    3, 2, // Var 3
+    1, // Add
+    3, 1, // Var 2
+    1, // Add
+    7, 3,  // Ret 3
+    10, // Exit
+];
+
 Result:
 Code seq: [0, 1, 0, 2, 0, 3, 6, 11, 3, 9, 21, 3, 3, 3, 2, 1, 3, 1, 1, 7, 3, 10]
 Current pc: 0, rts: []
